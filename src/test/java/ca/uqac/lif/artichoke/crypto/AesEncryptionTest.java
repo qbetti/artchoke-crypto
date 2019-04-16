@@ -11,10 +11,6 @@ import java.util.Arrays;
 
 public class AesEncryptionTest {
 
-    @BeforeClass
-    public static void init() {
-        Security.addProvider(new BouncyCastleProvider());
-    }
 
     @Test
     public void testGenerateKey() {

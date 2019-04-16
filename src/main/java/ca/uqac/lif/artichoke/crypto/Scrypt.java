@@ -2,6 +2,7 @@ package ca.uqac.lif.artichoke.crypto;
 
 
 import ca.uqac.lif.artichoke.encoding.HexEncoder;
+import org.bouncycastle.crypto.generators.SCrypt;
 
 import java.security.SecureRandom;
 
@@ -17,22 +18,38 @@ public class Scrypt {
      */
     private static final int PARALLELISATION_PARAM = 1;
     private static final int BLOCK_SIZE = 8;
-    private static final int N = 262144;
+    private static final int N = 16384;
 
     /**
      * Desired size in bytes of the derived key
      */
-    private static final int DERIVED_KEY_SIZE = 32; // in bytes
+    public static final int DEFAULT_DERIVED_KEY_SIZE = 32; // in bytes
 
     /**
      * Default size in bytes of the generated salts
      */
-    private static final int DEFAULT_SCRYPT_SALT_SIZE = 32; // in bytes
+    public static final int DEFAULT_SCRYPT_SALT_SIZE = 32; // in bytes
 
     /**
      * The salt to use for this instance's derivations
      */
     private byte[] salt;
+
+
+    /**
+     * Constructor that generates a random byte salt of specified size
+     * @param saltSize the length of the salt to generate in bytes
+     */
+    public Scrypt(int saltSize) {
+        this(generateNewSalt(saltSize));
+    }
+
+    /**
+     * Constructor that generates a random {@value #DEFAULT_SCRYPT_SALT_SIZE}-byte salt
+     */
+    public Scrypt() {
+        this(DEFAULT_SCRYPT_SALT_SIZE);
+    }
 
     /**
      * Constructor by specifying the salt bytes that will be used for the scrypt
@@ -41,23 +58,8 @@ public class Scrypt {
      *             {@value #DEFAULT_SCRYPT_SALT_SIZE}-byte salt
      */
     public Scrypt(byte[] salt) {
-        if (salt == null) {
-            salt = generateNewSalt();
-        }
         this.salt = salt;
     }
-
-    /**
-     * Generates a random {@value #DEFAULT_SCRYPT_SALT_SIZE}-byte long salt
-     * @return the generated salt
-     */
-    public static byte[] generateNewSalt() {
-        SecureRandom random = new SecureRandom();
-        byte[] salt = new byte[DEFAULT_SCRYPT_SALT_SIZE];
-        random.nextBytes(salt);
-        return salt;
-    }
-
     /**
      * Constructor by specifying the salt hexadecimal representation that will be used
      * for the scrypt key derivation function
@@ -67,31 +69,67 @@ public class Scrypt {
         this(HexEncoder.getInstance().decode(hexSalt));
     }
 
+
     /**
-     * Constructor that generates a random {@value #DEFAULT_SCRYPT_SALT_SIZE}-byte salt
+     * Generates a random salt of specified length
+     * @param size the length of the salt in bytes
+     * @return the generated salt
      */
-    public Scrypt() {
-        this((byte[]) null);
+    public static byte[] generateNewSalt(int size) {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[size];
+        random.nextBytes(salt);
+        return salt;
     }
 
     /**
-     * Generates a 256-bit key derived from the specified passphrase using the scrypt
+     * Generates a random {@value #DEFAULT_SCRYPT_SALT_SIZE}-byte long salt
+     * @return the generated salt
+     */
+    public static byte[] generateNewSalt() {
+        return generateNewSalt(DEFAULT_SCRYPT_SALT_SIZE);
+    }
+
+    /**
+     * Generates a key of specified length derived from the specified passphrase using the scrypt
+     * derivation function
+     * @param passphrase the passphrase bytes
+     * @param keySize the desired key size in bytes
+     * @return the derived key
+     */
+    public byte[] deriveKey(byte[] passphrase, int keySize) {
+        return SCrypt.generate(passphrase, salt, N, BLOCK_SIZE, PARALLELISATION_PARAM, keySize);
+    }
+
+    /**
+     * Generates a {@value DEFAULT_DERIVED_KEY_SIZE}-byte key derived from the specified passphrase using the scrypt
      * derivation function
      * @param passphrase the passphrase bytes
      * @return the derived key
      */
     public byte[] deriveKey(byte[] passphrase) {
-        return org.bouncycastle.crypto.generators.SCrypt.generate(passphrase, salt, N, BLOCK_SIZE, PARALLELISATION_PARAM, DERIVED_KEY_SIZE);
+        return deriveKey(passphrase, DEFAULT_DERIVED_KEY_SIZE);
     }
 
     /**
-     * Generates a 256-bit key derived from the specified passphrase using the scrypt
+     * Generates a {@value DEFAULT_DERIVED_KEY_SIZE}-byte key derived from the specified passphrase using the scrypt
      * derivation function
      * @param passphrase the passphrase
      * @return the derived key
      */
     public byte[] deriveKey(String passphrase) {
         return deriveKey(passphrase.getBytes());
+    }
+
+    /**
+     * Generates a key of specified length derived from the specified passphrase using the scrypt
+     * derivation function
+     * @param passphrase the passphrase
+     * @param keySize the desired key size in bytes
+     * @return the derived key
+     */
+    public byte[] deriveKey(String passphrase, int keySize) {
+        return deriveKey(passphrase.getBytes(), keySize);
     }
 
     /**

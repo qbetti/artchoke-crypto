@@ -91,7 +91,7 @@ public class AesCtrEncryption extends AesEncryption {
      * @return the cipher containing the encrypted data and the IV used for encryption
      */
     public AesCtrCipher encrypt(byte[] data) {
-        return encrypt(data, generateIv(DEFAULT_IV_SIZE));
+        return encrypt(data, DEFAULT_IV_SIZE);
     }
 
     /**
@@ -102,16 +102,6 @@ public class AesCtrEncryption extends AesEncryption {
      */
     public AesCtrCipher encrypt(AesCtrCipher cipher) {
         return encrypt(cipher.getDataBytes(), cipher.getIv());
-    }
-
-    /**
-     * Encrypts data using {@value #AES_COUNTER_MODE} algorithm and a specified IV
-     * @param hexData the hexadecimal-encoded bytes of the data to encrypt
-     * @param hexIv the hexadecimal-encoded bytes of the IV
-     * @return the cipher containing the encrypted data and the IV used for encryption
-     */
-    public AesCtrCipher encrypt(String hexData, String hexIv) {
-        return encrypt(new AesCtrCipher(hexData, hexIv));
     }
 
     /**
@@ -139,15 +129,6 @@ public class AesCtrEncryption extends AesEncryption {
         return decrypt(encryptedCipher.getDataBytes(), encryptedCipher.getIv());
     }
 
-    /**
-     * Decrypts data using {@value #AES_COUNTER_MODE} algorithm and the corresponding IV
-     * @param hexEncryptedData the hexadecimal-encoded bytes of the data to decrypt
-     * @param hexIv the hexadecimal-encoded bytes of the IV to use for decryption
-     * @return the cipher containing the decrypted data and the IV used for decryption
-     */
-    public AesCtrCipher decrypt(String hexEncryptedData, String hexIv) {
-        return decrypt(new AesCtrCipher(hexEncryptedData, hexIv));
-    }
 
     /**
      * Performs {@value #AES_COUNTER_MODE} encryption or decryption of the
