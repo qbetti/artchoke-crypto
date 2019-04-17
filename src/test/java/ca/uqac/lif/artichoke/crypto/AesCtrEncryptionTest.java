@@ -45,5 +45,9 @@ public class AesCtrEncryptionTest {
                 b64.decode(encryptedCipher0.encodeIv(b64)));
 
         assertArrayEquals(DATA, decryptedCipher0.getDataBytes());
+
+        encryptedCipher0 = aes.encrypt(new AesCtrCipher(DATA, AesCtrEncryption.generateIv(16)));
+        decryptedCipher0 = aes.decrypt(encryptedCipher0);
+        assertArrayEquals(DATA, decryptedCipher0.getDataBytes());
     }
 }

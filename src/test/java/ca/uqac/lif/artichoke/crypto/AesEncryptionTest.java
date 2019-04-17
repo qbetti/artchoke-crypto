@@ -1,16 +1,13 @@
 package ca.uqac.lif.artichoke.crypto;
 
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import javax.crypto.SecretKey;
-import java.security.Security;
 import java.util.Arrays;
 
-public class AesEncryptionTest {
+import static org.junit.Assert.*;
 
+public class AesEncryptionTest {
 
     @Test
     public void testGenerateKey() {
@@ -25,6 +22,4 @@ public class AesEncryptionTest {
         assertNotNull(littleKey);
         assertEquals(128, littleKey.getEncoded().length * 8);
     }
-
-
 }

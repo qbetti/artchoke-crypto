@@ -16,8 +16,8 @@ public class Scrypt {
      * Scrypt derivation function parameters to use
      * TODO: more explanation
      */
-    private static final int PARALLELISATION_PARAM = 1;
-    private static final int BLOCK_SIZE = 8;
+    private static final int P = 1;
+    private static final int R = 8;
     private static final int N = 16384;
 
     /**
@@ -34,7 +34,6 @@ public class Scrypt {
      * The salt to use for this instance's derivations
      */
     private byte[] salt;
-
 
     /**
      * Constructor that generates a random byte salt of specified size
@@ -54,12 +53,12 @@ public class Scrypt {
     /**
      * Constructor by specifying the salt bytes that will be used for the scrypt
      * key derivation function.
-     * @param salt the salt bytes. If null, will generate a random
-     *             {@value #DEFAULT_SCRYPT_SALT_SIZE}-byte salt
+     * @param salt the salt bytes.
      */
     public Scrypt(byte[] salt) {
         this.salt = salt;
     }
+
     /**
      * Constructor by specifying the salt hexadecimal representation that will be used
      * for the scrypt key derivation function
@@ -68,7 +67,6 @@ public class Scrypt {
     public Scrypt(String hexSalt) {
         this(HexEncoder.getInstance().decode(hexSalt));
     }
-
 
     /**
      * Generates a random salt of specified length
@@ -98,7 +96,7 @@ public class Scrypt {
      * @return the derived key
      */
     public byte[] deriveKey(byte[] passphrase, int keySize) {
-        return SCrypt.generate(passphrase, salt, N, BLOCK_SIZE, PARALLELISATION_PARAM, keySize);
+        return SCrypt.generate(passphrase, salt, N, R, P, keySize);
     }
 
     /**
