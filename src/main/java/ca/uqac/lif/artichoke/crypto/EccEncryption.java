@@ -228,6 +228,10 @@ public class EccEncryption {
         return verifySignature(signature, data, toPublicKey(publicKeyBytes, curveName));
     }
 
+    public static boolean verifySignature(byte[] signature, byte[] data, byte[] publicKeyBytes) {
+        return verifySignature(signature, data, toPublicKey(publicKeyBytes, DEFAULT_CURVE_NAME));
+    }
+
     /**
      * Verifies a signature over a specified curve
      * @param signature the bytes of the signature
@@ -281,7 +285,7 @@ public class EccEncryption {
             return Arrays.copyOfRange(privateKeyBytes, 1, privateKeyBytes.length );
 
         } else if (privateKeyBytes.length < PRIVATE_KEY_SIZE) {
-            // If privateKey.getD() is small enough, BigInteger#toByteArray() will return only 31 or less bytes
+            // If privateKey.getD() is too small, BigInteger#toByteArray() will return only 31 or less bytes
             // This is because BigInteger#toByteArray() generates the smallest byte array that can
             // represent the BigInteger, which means that on a 32-byte key, if the first bytes are `0`,
             // privateKey.getD().toByteArray() will trim them, so we re-insert them at the beginning of the byte array in order
