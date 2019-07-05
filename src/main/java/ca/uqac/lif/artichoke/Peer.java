@@ -40,8 +40,10 @@ public class Peer {
 
     @Override
     public String toString() {
-
-
         return toJsonArray().toString();
+    }
+
+    public String getHexPublicKey() {
+        return hexPublicKey;
     }
 }

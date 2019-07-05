@@ -34,12 +34,17 @@ public class Action {
         return new Action(array.get(0).getAsString(), array.get(1).getAsString(), array.get(2).getAsString());
     }
 
-    @Override
-    public String toString() {
+    public JsonArray toJsonArray() {
         JsonArray array = new JsonArray();
         array.add(target);
         array.add(type);
         array.add(value);
-        return array.toString();
+
+        return array;
+    }
+
+    @Override
+    public String toString() {
+        return toJsonArray().toString();
     }
 }

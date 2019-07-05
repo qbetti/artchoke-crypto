@@ -206,6 +206,13 @@ public class Keyring {
     }
 
 
+    public byte[] sign(byte[] data) throws PrivateKeyDecryptionException, BadPassphraseException {
+        byte[] privateKey = decryptECPrivateKey(this.derivedKey);
+        EccEncryption ec = new EccEncryption(privateKey, HEX_ENCODER.decode(hexPublicKey));
+        EccSignature signature = ec.sign(data);
+        return signature.getBytes();
+    }
+
     public byte[] sign(byte[] data, String passphrase) throws PrivateKeyDecryptionException, BadPassphraseException {
         byte[] privateKey = decryptECPrivateKey(retrieveDerivedKey(passphrase));
         EccEncryption ec = new EccEncryption(privateKey, HEX_ENCODER.decode(hexPublicKey));

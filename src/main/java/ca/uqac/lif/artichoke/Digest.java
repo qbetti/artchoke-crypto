@@ -3,6 +3,9 @@ package ca.uqac.lif.artichoke;
 import ca.uqac.lif.artichoke.crypto.EccEncryption;
 import ca.uqac.lif.artichoke.crypto.EccSignature;
 import ca.uqac.lif.artichoke.encoding.Base64Encoder;
+import ca.uqac.lif.artichoke.exceptions.BadPassphraseException;
+import ca.uqac.lif.artichoke.exceptions.PrivateKeyDecryptionException;
+import ca.uqac.lif.artichoke.keyring.Keyring;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -41,6 +44,17 @@ public class Digest {
         byte[] hash = computeHash(lastDigest, encryptedAction, groupId);
         EccSignature signature = ecc.sign(hash);
         return new Digest(signature.getBytes());
+    }
+
+    public static Digest sign(Digest lastDigest, EncryptedAction encryptedAction, String groupId, Keyring kr) {
+        try {
+            byte[] hash = computeHash(lastDigest, encryptedAction, groupId);
+            byte[] signature = kr.sign(hash);
+            return new Digest(signature);
+        } catch (PrivateKeyDecryptionException | BadPassphraseException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public boolean verify(Digest lastDigest, EncryptedAction encryptedAction, String groupId, byte[] publicKey) {
