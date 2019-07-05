@@ -1,7 +1,8 @@
-package ca.uqac.lif.artichoke;
+package ca.uqac.lif.artichoke.keyring;
 
 import ca.uqac.lif.artichoke.crypto.AesCtrEncryption;
 import ca.uqac.lif.artichoke.exceptions.*;
+import ca.uqac.lif.artichoke.keyring.Keyring;
 import com.google.gson.JsonObject;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;

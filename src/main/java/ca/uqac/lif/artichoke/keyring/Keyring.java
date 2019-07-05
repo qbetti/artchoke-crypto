@@ -1,4 +1,4 @@
-package ca.uqac.lif.artichoke;
+package ca.uqac.lif.artichoke.keyring;
 
 
 import ca.uqac.lif.artichoke.crypto.*;
@@ -225,8 +225,6 @@ public class Keyring {
 
         return verifySignature(signature, data, this.hexPublicKey);
     }
-
-
 
 
     public byte[] retrieveDerivedKey(String passphrase) {

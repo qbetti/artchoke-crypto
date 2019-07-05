@@ -1,4 +1,4 @@
-package ca.uqac.lif.artichoke;
+package ca.uqac.lif.artichoke.keyring;
 
 public class KeyringGroup {
 

@@ -35,7 +35,7 @@ public class EccEncryption {
     /**
      * Full algorithm for signing
      */
-    private static final String SIGNATURE_ALGO = "SHA1withECDSA";
+    private static final String SIGNATURE_ALGO = "SHA256withECDSA";
 
     /**
      * The curve used for key generation and signing
