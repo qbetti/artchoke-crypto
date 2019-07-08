@@ -40,9 +40,9 @@ public class Digest {
     }
 
 
-    public static Digest sign(Digest lastDigest, EncryptedAction encryptedAction, String groupId, EccEncryption ecc) {
+    public static Digest sign(Digest lastDigest, EncryptedAction encryptedAction, String groupId, byte[] privateKey) {
         byte[] hash = computeHash(lastDigest, encryptedAction, groupId);
-        EccSignature signature = ecc.sign(hash);
+        EccSignature signature = EccEncryption.sign(hash, privateKey);
         return new Digest(signature.getBytes());
     }
 

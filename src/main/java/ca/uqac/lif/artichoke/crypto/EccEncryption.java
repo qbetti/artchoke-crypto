@@ -168,9 +168,10 @@ public class EccEncryption {
     /**
      * Signs data using {@value SIGNATURE_ALGO}
      * @param data the data to use for signature
+     * @param privateKey the private key to use to sign the data
      * @return the signature, or null if something goes wrong
      */
-    public EccSignature sign(byte[] data) {
+    public static EccSignature sign(byte[] data, PrivateKey privateKey) {
         Signature ecdsa = null;
         try {
             ecdsa = Signature.getInstance(SIGNATURE_ALGO);
@@ -193,6 +194,26 @@ public class EccEncryption {
             e.printStackTrace();
             return null;
         }
+    }
+
+    /**
+     * Signs data using {@value SIGNATURE_ALGO} over the curve {@value DEFAULT_CURVE_NAME}
+     * @param data the data to use for signature
+     * @param privateKeyBytes the byte of the key to use to sign the data
+     * @return the signature, or null if something goes wrong
+     */
+    public static EccSignature sign(byte[] data, byte[] privateKeyBytes) {
+        PrivateKey privateKey = toPrivateKey(privateKeyBytes, DEFAULT_CURVE_NAME);
+        return sign(data, privateKey);
+    }
+
+    /**
+     * Signs data using {@value SIGNATURE_ALGO}
+     * @param data the data to use for signature
+     * @return the signature, or null if something goes wrong
+     */
+    public EccSignature sign(byte[] data) {
+        return sign(data, this.privateKey);
     }
 
     /**
@@ -228,6 +249,13 @@ public class EccEncryption {
         return verifySignature(signature, data, toPublicKey(publicKeyBytes, curveName));
     }
 
+    /**
+     * Verifies a signature over the default curve ({@link #DEFAULT_CURVE_NAME}
+     * @param signature the bytes of the signature
+     * @param data the expected bytes of the signed data
+     * @param publicKeyBytes the public key bytes (ONLY the EC point coordinates) corresponding to the signature
+     * @return true if the signature is verified, false otherwise
+     */
     public static boolean verifySignature(byte[] signature, byte[] data, byte[] publicKeyBytes) {
         return verifySignature(signature, data, toPublicKey(publicKeyBytes, DEFAULT_CURVE_NAME));
     }

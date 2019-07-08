@@ -15,23 +15,27 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 /**
  * A Keyring is an object containing information about a user's elliptic curve (EC) key pair,
- * and the groups' info (id) and secret key he belongs to.
+ * and the groups' info (id) he belongs to and their corresponding secret keys.
  * The user's private key and all the groups' secret key are encrypted, making this keyring local or online
  * storage secure.
- * The user's private key AES-encrypted by the key derived from the keyring passphrase, that is specified
+ * The user's private key is AES-encrypted by the key derived from the keyring passphrase, which is specified
  * at the keyring creation.
- * The passphrase key derivation is done using the Key Derivation Function SCrypt, and MUST NOT BE FORGOTTEN
- * because it cannot be recovered. If it were lost, everything stored in the keyring would be unusable.
+ * The passphrase key derivation is done using the Key Derivation Function Scrypt, and MUST NOT BE FORGOTTEN
+ * since it cannot be recovered. If it were lost, everything stored in the keyring would be unusable.
  * The groups' secret keys are then AES-encrypted using the user's private key as the AES secret key.
  * The AES mode used for encryption/decryption is the counter mode, which means that each encrypted key is followed
  * by the corresponding initialisation vector (IV)
  */
 public class Keyring {
 
+    /**
+     * The hexadecimal encoder
+     */
     private static final StringEncoder HEX_ENCODER = HexEncoder.getInstance();
 
     /**
@@ -206,6 +210,14 @@ public class Keyring {
     }
 
 
+    /**
+     * Signs provided data with the encrypted private key of the keyring file.
+     * Works only if the keyring is UNLOCKED !
+     * @param data the data to sign
+     * @return the signature
+     * @throws PrivateKeyDecryptionException if a problem occurred during the private key decryption
+     * @throws BadPassphraseException if the passphrase used is incorrect
+     */
     public byte[] sign(byte[] data) throws PrivateKeyDecryptionException, BadPassphraseException {
         byte[] privateKey = decryptECPrivateKey(this.derivedKey);
         EccEncryption ec = new EccEncryption(privateKey, HEX_ENCODER.decode(hexPublicKey));
@@ -213,6 +225,14 @@ public class Keyring {
         return signature.getBytes();
     }
 
+    /**
+     * Signs provided data with the encrypted private key of the keyring file.
+     * @param data the data to sign
+     * @param passphrase the passphrase used to unlock the keyring
+     * @return the signature
+     * @throws PrivateKeyDecryptionException if a problem occurred during the private key decryption
+     * @throws BadPassphraseException if the passphrase used is incorrect
+     */
     public byte[] sign(byte[] data, String passphrase) throws PrivateKeyDecryptionException, BadPassphraseException {
         byte[] privateKey = decryptECPrivateKey(retrieveDerivedKey(passphrase));
         EccEncryption ec = new EccEncryption(privateKey, HEX_ENCODER.decode(hexPublicKey));
@@ -221,11 +241,24 @@ public class Keyring {
     }
 
 
+    /**
+     * Verifies if a signature corresponds to a provided public key
+     * @param signature the signature to verify
+     * @param data the data to compare the signature
+     * @param hexPublicKey the hex-encoded public key to verify the signature
+     * @return true if the signature is valid, false otherwise
+     */
     public static boolean verifySignature(byte[] signature, byte[] data, String hexPublicKey) {
         return EccEncryption.verifySignature(signature, data, HEX_ENCODER.decode(hexPublicKey));
     }
 
 
+    /**
+     * Verifies if a signature corresponds to this keyring's public key
+     * @param signature the signature to verify
+     * @param data the data to compare the signature
+     * @return true if the signature is valid, false otherwise
+     */
     public boolean verifySignature(byte[] signature, byte[] data) {
         if(this.hexPublicKey == null)
             return false;
@@ -234,6 +267,11 @@ public class Keyring {
     }
 
 
+    /**
+     * Generates the derived key from scrypt algorithm based on a given password
+     * @param passphrase the passphrase use to generate the derived key
+     * @return the scrypt-generated derived key
+     */
     public byte[] retrieveDerivedKey(String passphrase) {
         if(passphrase == null) {
             return this.derivedKey;
@@ -324,9 +362,15 @@ public class Keyring {
      */
     public byte[] retrieveGroupKey(String passphrase, String groupId)
             throws GroupIdException, PrivateKeyDecryptionException, BadPassphraseException {
-
+        byte[] derivedKey;
+        if(passphrase == null)
+            derivedKey = this.derivedKey;
+        else {
         Scrypt sCrypt = new Scrypt(hexScryptSalt);
-        return retrieveGroupKey(sCrypt.deriveKey(passphrase), groupId);
+          derivedKey = sCrypt.deriveKey(passphrase);
+        }
+
+        return retrieveGroupKey(derivedKey, groupId);
     }
 
     /**
@@ -556,6 +600,44 @@ public class Keyring {
         return new ArrayList<>(groupsById.keySet());
     }
 
+    /**
+     * Returns the list of group keys in this keyring ordered by group id.
+     * Works only if the keyring is UNLOCKED!
+     * @return the list of group keys in this keyring ordered by group id
+     * @throws PrivateKeyDecryptionException if a problem occurred during the private key decryption
+     * @throws BadPassphraseException if the derived key is incorrect for this keyring
+     */
+    public Map<String, byte[]> getAllKeys() throws PrivateKeyDecryptionException, BadPassphraseException {
+        return getAllKeys(null);
+    }
+
+    /**
+     * Returns the list of group keys in this keyring ordered by group id
+     * @param passphrase the passphrase for this keyring
+     * @return the list of group keys in this keyring ordered by group id
+     * @throws PrivateKeyDecryptionException if a problem occurred during the private key decryption
+     * @throws BadPassphraseException if the derived key is incorrect for this keyring
+     */
+    public Map<String, byte[]> getAllKeys(String passphrase) throws PrivateKeyDecryptionException, BadPassphraseException {
+        Map<String, byte[]> keysByGroupId = new HashMap<>();
+        byte[] derivedKey = retrieveDerivedKey(passphrase);
+
+        for(String groupId : getGroupIds()) {
+            try {
+                byte[] groupKey = retrieveGroupKey(derivedKey, groupId);
+                keysByGroupId.put(groupId, groupKey);
+            } catch (GroupIdException e) {
+                // SHOULD NOT HAPPEN
+                e.printStackTrace();
+            }
+        }
+        return keysByGroupId;
+    }
+
+    /**
+     * Returns the hexadecimal-encoded public key stored in this keyring
+     * @return the hexadecimal-encoded public key stored in this keyring
+     */
     public String getHexPublicKey() {
         return hexPublicKey;
     }

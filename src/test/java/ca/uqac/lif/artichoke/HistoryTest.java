@@ -37,7 +37,7 @@ public class HistoryTest {
     public void initHistory() {
         history = new History();
         for(int i = 0; i < 100; i++)
-            history.add(BASIC_ACTION, peer, "myGroup", groupKey, ecc);
+            history.add(BASIC_ACTION, peer, "myGroup", groupKey, ecc.getPrivateKeyBytes());
     }
 
     @Test
@@ -46,7 +46,7 @@ public class HistoryTest {
         assertEquals(0, history.verify().size());
 
         EncryptedAction encryptedAction = EncryptedAction.encrypt(BASIC_ACTION, groupKey);
-        Digest digest = Digest.sign(history.getLastDigest(), encryptedAction, "myGroup", ecc);
+        Digest digest = Digest.sign(history.getLastDigest(), encryptedAction, "myGroup", ecc.getPrivateKeyBytes());
 
         PeerAction peerActionWithWrongGroup = new PeerAction(encryptedAction, peer, "wrongGroup", digest);
         history.add(peerActionWithWrongGroup);

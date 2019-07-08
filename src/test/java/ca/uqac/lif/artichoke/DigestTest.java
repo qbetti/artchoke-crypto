@@ -30,7 +30,7 @@ public class DigestTest {
         Action action = new Action("first_name", "write", "Quentin");
         EncryptedAction encryptedAction = EncryptedAction.encrypt(action, groupKey);
 
-        Digest digest = Digest.sign(null, encryptedAction, "myGroup", ecc);
+        Digest digest = Digest.sign(null, encryptedAction, "myGroup", ecc.getPrivateKeyBytes());
         String encodedDigest = digest.encode();
         Digest decodedDigest = Digest.decode(encodedDigest);
         assertTrue(decodedDigest.verify(null, encryptedAction, "myGroup", ecc.getPublicKeyBytes()));

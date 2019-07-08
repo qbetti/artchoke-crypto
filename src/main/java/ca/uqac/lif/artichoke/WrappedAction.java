@@ -2,13 +2,16 @@ package ca.uqac.lif.artichoke;
 
 import com.google.gson.JsonArray;
 
-public class ActionWrapper {
+/**
+ * A bit like {@link PeerAction} but the action is not encrypted, and there is no digest
+ */
+public class WrappedAction {
 
     private Action action;
     private Peer peer;
     private String groupId;
 
-    public ActionWrapper(Action action, Peer peer, String groupId) {
+    public WrappedAction(Action action, Peer peer, String groupId) {
         this.action = action;
         this.peer = peer;
         this.groupId = groupId;
