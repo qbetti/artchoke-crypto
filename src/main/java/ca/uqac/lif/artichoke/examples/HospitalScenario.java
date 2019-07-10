@@ -15,7 +15,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.security.Security;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 /**
@@ -189,6 +191,15 @@ public class HospitalScenario {
 
         System.out.println("\nFor insurance");
         wrappedActions = decodedHistory.decrypt(insuranceKeyring);
+        for(WrappedAction wrappedAction : wrappedActions) {
+            System.out.println(wrappedAction);
+        }
+
+        Map<String, byte[]> keysByGroudId = new HashMap<>();
+        keysByGroudId.put(GROUP_ALL, ownerKeyring.retrieveGroupKey(GROUP_ALL));
+
+        System.out.println("\nFor all");
+        wrappedActions = decodedHistory.decrypt(keysByGroudId);
         for(WrappedAction wrappedAction : wrappedActions) {
             System.out.println(wrappedAction);
         }

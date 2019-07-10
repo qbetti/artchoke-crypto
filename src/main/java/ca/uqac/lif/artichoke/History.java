@@ -1,6 +1,5 @@
 package ca.uqac.lif.artichoke;
 
-import ca.uqac.lif.artichoke.crypto.EccEncryption;
 import ca.uqac.lif.artichoke.encoding.Base64Encoder;
 import ca.uqac.lif.artichoke.encoding.HexEncoder;
 import ca.uqac.lif.artichoke.exceptions.BadPassphraseException;
@@ -147,14 +146,42 @@ public class History {
         List<WrappedAction> actions = new ArrayList<>();
 
         for(PeerAction peerAction : peerActionSequence) {
+            Action action;
             try {
-                Action action = peerAction.getEncryptedAction().decrypt(kr.retrieveGroupKey(peerAction.getGroupId()));
-                actions.add(new WrappedAction(action, peerAction.getPeer(), peerAction.getGroupId()));
+                action = peerAction.getEncryptedAction().decrypt(kr.retrieveGroupKey(peerAction.getGroupId()));
             } catch (GroupIdException e) {
-                actions.add(new WrappedAction(new Action("hidden", "hidden", "hidden"), peerAction.getPeer(), peerAction.getGroupId()));
+                action = new Action("hidden", "hidden", "hidden");
             } catch (PrivateKeyDecryptionException | BadPassphraseException e) {
+                action = new Action("hidden", "hidden", "hidden");
                 e.printStackTrace();
             }
+            actions.add(new WrappedAction(action, peerAction.getPeer(), peerAction.getGroupId()));
+        }
+
+        return actions;
+    }
+
+    /**
+     * Decrypts and returns actions stored in the peer-action sequence with provided group keys
+     * @param keysByGroupId the map from group ids to their key group
+     * @return the list of decripted action. If an action cannot be decrypted (group key is missing),
+     *          an action with "hidden" values for target, type and value, is put.
+     */
+    public List<WrappedAction> decrypt(Map<String, byte[]> keysByGroupId) {
+        if(keysByGroupId == null)
+            return null;
+
+        List<WrappedAction> actions = new ArrayList<>();
+
+        for(PeerAction peerAction : peerActionSequence) {
+            byte[] groupKey = keysByGroupId.get(peerAction.getGroupId());
+            Action action;
+            if(groupKey != null)
+                action = peerAction.getEncryptedAction().decrypt(groupKey);
+            else
+                action = new Action("hidden", "hidden", "hidden");
+
+            actions.add(new WrappedAction(action, peerAction.getPeer(), peerAction.getGroupId()));
         }
 
         return actions;

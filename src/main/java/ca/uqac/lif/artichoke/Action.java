@@ -1,18 +1,10 @@
 package ca.uqac.lif.artichoke;
 
-import ca.uqac.lif.artichoke.encoding.Base64Encoder;
-import ca.uqac.lif.artichoke.encoding.StringEncoder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
-import java.util.logging.Logger;
-
 public class Action {
-
-    private final static Logger logger = Logger.getLogger(Action.class.getName());
-
-    public static final StringEncoder BASE64_ENCODER = Base64Encoder.getInstance();
 
     private String target;
     private String type;
