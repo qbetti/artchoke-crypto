@@ -35,6 +35,18 @@ public class Action {
         return array;
     }
 
+    public String getTarget() {
+        return target;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
     @Override
     public String toString() {
         return toJsonArray().toString();
