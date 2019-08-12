@@ -46,4 +46,8 @@ public class Peer {
     public String getHexPublicKey() {
         return hexPublicKey;
     }
+
+    public String getName() {
+        return name;
+    }
 }
